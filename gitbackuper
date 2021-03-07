@@ -1,0 +1,101 @@
+#! /usr/bin/env python3
+#  -*- coding: utf-8 -*-
+
+def main():
+
+	print(colored('Making backup folder...', 'yellow', attrs=['bold', 'blink']), end='\x1b[1K\r')
+	output = '' #'>/dev/null'
+	date = datetime.datetime.now().strftime("%d-%m-%Y - %H:%M")
+	os.system(f'mkdir -p ~/"Backup - {date}" >/dev/null')
+
+	dirName = '/home/sjoerdv'
+	exclude = [
+		'/home/sjoerdv/apps/page',
+		'/home/sjoerdv/.',
+		'.git',
+	]
+
+	print(colored('Making backup folder... Done', 'yellow', attrs=['bold']))
+
+	listOfFiles = []
+	# Get the list of all files in directory tree at given path
+	try:
+		for (dirpath, dirnames, filenames) in os.walk(dirName):
+			for file in filenames:
+				for excludedir in exclude:
+					if excludedir in dirpath:
+						break
+				else:
+					if not (dirpath, file) in listOfFiles:
+						if os.path.isfile(f"{dirpath}/{file}"):
+							listOfFiles.append((dirpath, file))
+
+						i = len(listOfFiles)
+						sys.stdout.write(colored(f'\rSearching for files (%d found)...', 'yellow', attrs=['bold', 'blink']) %i)
+						sys.stdout.flush()
+	except:
+		pass
+	sys.stdout.write(colored(f'\rSearching for files ({len(listOfFiles)} found)... Done\n', 'yellow', attrs=['bold']))
+	sys.stdout.flush()
+
+	# copy them
+	i = 0
+	for file in listOfFiles:
+		sys.stdout.write(colored(f'\rCopying files (%i/{len(listOfFiles)})...', 'yellow', attrs=['bold', 'blink']) %i)
+		sys.stdout.flush()
+		os.system(f'mkdir -p ~/"Backup - {date}"/"{file[0]}" >/dev/null')
+		os.system(f'cp "{file[0]}/{file[1]}" ~/"Backup - {date}"/"{file[0]}"/ 2>/dev/null')
+		i += 1
+	print(colored(f'\rCopying files ({i}/{len(listOfFiles)})... Done', 'yellow', attrs=['bold']))
+
+	# zip backup folder
+	sys.stdout.write(colored(f'Zipping backup folder...', 'yellow', attrs=['bold', 'blink']))
+	sys.stdout.flush()
+	os.system(f'zip -r "Backup - {date}.zip" ~/"Backup - {date}" >/dev/null')
+	sys.stdout.write(colored(f'\rZipping backup folder... Done\n', 'yellow', attrs=['bold']))
+
+	# git add
+	sys.stdout.write(colored(f"Adding 'Backup - {date}.zip' to git...", 'yellow', attrs=['bold', 'blink']))
+	sys.stdout.flush()
+	os.system(f"git add 'Backup - {date}.zip'")
+	sys.stdout.write(colored(f"\rAdding 'Backup - {date}.zip' to git... Done\n", 'yellow', attrs=['bold']))
+	sys.stdout.flush()
+
+	# git commit
+	sys.stdout.write(colored(f"Commiting 'Backup - {date}.zip'...", 'yellow', attrs=['bold', 'blink']))
+	sys.stdout.flush()
+	os.system(f"git commit -m 'Backup - {date}' >/dev/null")
+	sys.stdout.write(colored(f"\rCommiting 'Backup - {date}.zip'... Done\n", 'yellow', attrs=['bold']))
+	sys.stdout.flush()
+
+	# git push
+	os.system(f"git branch -M main")
+	sys.stdout.write(colored(f"Pushing 'Backup - {date}.zip' to github...", 'yellow', attrs=['bold', 'blink']))
+	sys.stdout.flush()
+	os.system(f"git push -u backup main --quiet >/dev/null")
+	#https://SjVer:sjoerd8761@github.com/SjVer/Backups.git main
+	sys.stdout.write(colored(f"\rPushing 'Backup - {date}.zip' to github... Done\n", 'yellow', attrs=['bold']))
+	sys.stdout.flush()
+
+	# cleanup
+	sys.stdout.write(colored(f"Cleaning up...", 'yellow', attrs=['bold', 'blink']))
+	sys.stdout.flush()
+	os.system(f"rm ~/'Backup - {date}.zip' >/dev/null")
+	os.system(f"rm -r ~/'Backup - {date}' >/dev/null")
+	sys.stdout.write(colored(f"\rCleaning up... Done\n", 'yellow', attrs=['bold']))
+	sys.stdout.flush()
+
+	print(colored("Backup complete! (see https://github.com/SjVer/Backups/tree/main')", 'yellow', attrs=['bold']))
+	exit()
+				
+if __name__ == '__main__':
+
+	import os, os_signals, datetime, time, sys
+	from termcolor import colored
+	from progress.bar import *
+
+	if not input(colored('Backup files to github? [y/n]: ', 'yellow', attrs=['bold'])).lower() == 'y':
+		print(colored('Aborted', 'red', attrs=['bold']))
+		exit()
+	else:
+		main()
