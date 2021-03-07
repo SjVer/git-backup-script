@@ -8,11 +8,11 @@ def main():
 	date = datetime.datetime.now().strftime("%d-%m-%Y - %H:%M")
 	os.system(f'mkdir -p ~/"Backup - {date}" >/dev/null')
 
-	dirName = '/home/sjoerdv'
+	# DIRNAME -> HOME DIRECTORY
+	# EXCLUDE -> EXCLUDED PATHS
+	dirName = '/home/user'
 	exclude = [
-		'/home/sjoerdv/apps/page',
-		'/home/sjoerdv/.',
-		'.git',
+		'/home/user/.',
 	]
 
 	print(colored('Making backup folder... Done', 'yellow', attrs=['bold']))
@@ -72,8 +72,8 @@ def main():
 	os.system(f"git branch -M main")
 	sys.stdout.write(colored(f"Pushing 'Backup - {date}.zip' to github...", 'yellow', attrs=['bold', 'blink']))
 	sys.stdout.flush()
-	os.system(f"git push -u backup main --quiet >/dev/null")
-	#https://SjVer:sjoerd8761@github.com/SjVer/Backups.git main
+	# MAKE SURE TO HAVE YOUR REMOTE AND CREDENTIALS SET UP
+	os.system(f"git push -u origin main --quiet >/dev/null")
 	sys.stdout.write(colored(f"\rPushing 'Backup - {date}.zip' to github... Done\n", 'yellow', attrs=['bold']))
 	sys.stdout.flush()
 
@@ -85,7 +85,7 @@ def main():
 	sys.stdout.write(colored(f"\rCleaning up... Done\n", 'yellow', attrs=['bold']))
 	sys.stdout.flush()
 
-	print(colored("Backup complete! (see https://github.com/SjVer/Backups/tree/main')", 'yellow', attrs=['bold']))
+	print(colored("Backup complete! (see YOUR GITHUB LINK HERE)", 'yellow', attrs=['bold']))
 	exit()
 				
 if __name__ == '__main__':
